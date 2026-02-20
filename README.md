@@ -1,12 +1,12 @@
 # scene-otsu
 
-A Python library for scene splitting SRT subtitle files using the Otsu method. Uses OpenAI's embedding models to find semantically appropriate scene boundaries.
+A Python library for scene splitting SRT subtitle files using the Otsu method. Uses VoyageAI's embedding models to find semantically appropriate scene boundaries.
 
 ## Features
 
 - **SRT Subtitle Parsing**: Parse SRT format subtitle files
 - **Otsu Method Scene Splitting**: Recursively apply multi-dimensional Otsu method to detect semantically appropriate scene boundaries
-- **OpenAI Embeddings**: Use OpenAI's embedding models to calculate semantic similarity of text
+- **VoyageAI Embeddings**: Use VoyageAI's embedding models to calculate semantic similarity of text
 - **Token Limit Support**: Split scenes based on specified maximum token count
 
 ## Installation
@@ -22,8 +22,8 @@ pip install scene-otsu
 ```python
 from scene_otsu import SceneSplitter
 
-# Set OpenAI API key
-api_key = "your-openai-api-key"
+# Set VoyageAI API key
+api_key = "your-voyageai-api-key"
 
 # Initialize SceneSplitter
 splitter = SceneSplitter(api_key=api_key)
@@ -82,8 +82,8 @@ scenes = SubtitleParser.parse_srt_scenes(srt_content)
 Initialize SceneSplitter.
 
 **Parameters:**
-- `api_key`: OpenAI API key
-- `model`: OpenAI embedding model to use (default: "text-embedding-3-small")
+- `api_key`: VoyageAI API key
+- `model`: VoyageAI embedding model to use (default: "text-embedding-3-small")
 - `batch_size`: Batch size for embedding generation (default: 16)
 
 #### `process(srt_string: str, max_tokens: int = 200) -> str`
@@ -126,14 +126,13 @@ Convert timestamp string to seconds.
 ## Requirements
 
 - Python 3.11 or higher
-- OpenAI API key
+- VoyageAI API key
 
 ## Dependencies
 
 - numpy >= 2.3.5
-- openai >= 2.8.1
+- voyageai >= 0.3.7
 - scikit-learn >= 1.7.2
-- tiktoken >= 0.12.0
 - tqdm >= 4.67.1
 
 ## License
