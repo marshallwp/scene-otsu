@@ -2,24 +2,25 @@ from datetime import datetime
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
-import tiktoken
-from openai import OpenAI
+import voyageai
 from sklearn.preprocessing import normalize
 from tqdm import tqdm
 
 
-class OpenAIEmbedder:
+class VoyageAIEmbedder:
     def __init__(
-        self, api_key: str, model: str = "text-embedding-3-small", batch_size: int = 16
+        self, api_key: str, model: str = "voyage-4-lite", batch_size: int = 16
     ):
-        self.client = OpenAI(api_key=api_key)
+        vo = voyageai.Client(api_key=api_key)
+
+        self.client = vo
         self.model = model
         self.batch_size = batch_size
-        self.encoding = tiktoken.encoding_for_model(model)
+        self.encoding = vo.tokenizer(model)
 
     def count_tokens(self, text: str) -> int:
         """Accurately count tokens"""
-        return len(self.encoding.encode(text))
+        return self.client.count_tokens([text], self.model)
 
     def get_embeddings(self, texts: List[str], max_tokens: int = 200) -> np.ndarray:
         all_embeddings = []
@@ -27,11 +28,11 @@ class OpenAIEmbedder:
             range(0, len(texts), self.batch_size), desc="Generating embeddings"
         ):
             batch = texts[i : i + self.batch_size]
-            response = self.client.embeddings.create(
+            response = self.client.embed(
                 model=self.model,
-                input=batch,
+                texts=batch,
             )
-            batch_embeds = [d.embedding for d in response.data]
+            batch_embeds = response.embeddings
             all_embeddings.append(np.array(batch_embeds))
         return np.vstack(all_embeddings)
 
@@ -122,15 +123,15 @@ class SceneSplitter:
     """
 
     def __init__(
-        self, api_key: str, model: str = "text-embedding-3-small", batch_size: int = 16
+        self, api_key: str, model: str = "voyage-4-lite", batch_size: int = 16
     ):
         """
         Args:
-            api_key: OpenAI API key
-            model: OpenAI embedding model to use
+            api_key: VoyageAI API key
+            model: VoyageAI embedding model to use
             batch_size: Batch size for embedding generation
         """
-        self.embedder = OpenAIEmbedder(api_key, model, batch_size)
+        self.embedder = VoyageAIEmbedder(api_key, model, batch_size)
 
     def _seconds_to_timestamp(self, seconds: float) -> str:
         """Convert seconds to timestamp in HH:MM:SS,mmm format"""
@@ -155,7 +156,7 @@ class SceneSplitter:
         Returns:
             List of split scene information
         """
-        encoded = self.embedder.encoding.encode(text)
+        encoded = self.embedder.encoding.encode_batch([text])
         total_tokens = len(encoded)
 
         if total_tokens <= max_tokens:
@@ -309,4 +310,3 @@ def scenes_to_srt_string(scenes: List[Dict[str, Any]]) -> str:
         lines.append("")
         subtitle_index += 1
     return "\n".join(lines)
-
