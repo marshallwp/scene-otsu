@@ -28,7 +28,7 @@
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": {
 		"trust local repo": "git config --global --add safe.directory \"${containerWorkspaceFolder}\"",
-		"python packages": "pip3 install --user -r requirements.txt"
+		"python packages": "pip3 install --user hatch"
 	},
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.

@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 class VoyageAIEmbedder:
     def __init__(
-        self, api_key: str, model: str = "voyage-4-lite", batch_size: int = 16
+        self, api_key: str, model: str = "voyage-4-lite", batch_size: int = 1000
     ):
         vo = voyageai.Client(api_key=api_key)
 
@@ -123,7 +123,7 @@ class SceneSplitter:
     """
 
     def __init__(
-        self, api_key: str, model: str = "voyage-4-lite", batch_size: int = 16
+        self, api_key: str, model: str = "voyage-4-lite", batch_size: int = 1000
     ):
         """
         Args:
