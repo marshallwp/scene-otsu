@@ -1,14 +1,15 @@
 [project]
 name = "scene-otsu"
-version = "0.1.5"
-description = "SRT subtitle scene splitter using Otsu method with OpenAI embeddings"
+version = "0.1.5.2"
+description = "SRT subtitle scene splitter using Otsu method with VoyageAI embeddings"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
-    {name = "Yuki Harada", email = "yukiharada1228@gmail.com"}
+    {name = "Yuki Harada", email = "yukiharada1228@gmail.com"},
+    {name = "William Marshall", email = "62070150+marshallwp@users.noreply.github.com"}
 ]
-keywords = ["srt", "subtitle", "scene-split", "otsu", "openai", "embeddings"]
+keywords = ["srt", "subtitle", "scene-split", "otsu", "voyageai", "embeddings"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -35,10 +36,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yukiharada1228/scene-otsu"
-Documentation = "https://github.com/yukiharada1228/scene-otsu#readme"
-Repository = "https://github.com/yukiharada1228/scene-otsu"
-Issues = "https://github.com/yukiharada1228/scene-otsu/issues"
+Homepage = "https://github.com/marshallwp/scene-otsu"
+Documentation = "https://github.com/marshallwp/scene-otsu#readme"
+Repository = "https://github.com/marshallwp/scene-otsu"
+Issues = "https://github.com/marshallwp/scene-otsu/issues"
 
 [build-system]
 requires = ["hatchling"]
