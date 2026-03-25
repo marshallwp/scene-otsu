@@ -1,6 +1,6 @@
 [project]
 name = "scene-otsu"
-version = "0.1.5.2"
+version = "0.1.6.0"
 description = "SRT subtitle scene splitter using Otsu method with VoyageAI embeddings"
 readme = "README.md"
 requires-python = ">=3.11"

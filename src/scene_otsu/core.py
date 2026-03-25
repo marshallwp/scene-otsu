@@ -11,7 +11,7 @@ class VoyageAIEmbedder:
     def __init__(
         self, api_key: str, model: str = "voyage-4-lite", batch_size: int = 1000
     ):
-        vo = voyageai.Client(api_key=api_key)
+        vo = voyageai.Client(api_key=api_key) # pyright: ignore[reportPrivateImportUsage]
 
         self.client = vo
         self.model = model
@@ -60,40 +60,6 @@ class SubtitleParser:
             text = " ".join(lines[2:])
             subtitles.append((start_timestamp, end_timestamp, text))
         return subtitles
-
-    @staticmethod
-    def parse_srt_scenes(srt_string: str) -> List[Dict[str, Any]]:
-        """
-        Convert SRT to scene-based dictionary
-        Returns: [{index, start_time, end_time, start_sec, end_sec, text}]
-        """
-        content = srt_string.strip()
-        blocks = [b.strip() for b in content.split("\n\n") if b.strip()]
-        scenes: List[Dict[str, Any]] = []
-        for block in blocks:
-            lines = block.split("\n")
-            if len(lines) < 3:
-                continue
-            try:
-                idx = int(lines[0].strip())
-            except Exception:
-                idx = None
-            timing = lines[1].strip()
-            if "-->" not in timing:
-                continue
-            start_str, end_str = [t.strip() for t in timing.split("-->")]
-            text = " ".join([line.strip() for line in lines[2:] if line.strip()])
-            scenes.append(
-                {
-                    "index": idx,
-                    "start_time": start_str,
-                    "end_time": end_str,
-                    "start_sec": SubtitleParser.parse_timestamp(start_str),
-                    "end_sec": SubtitleParser.parse_timestamp(end_str),
-                    "text": text,
-                }
-            )
-        return scenes
 
     @staticmethod
     def parse_timestamp(timestamp: str) -> float:
@@ -229,6 +195,7 @@ class SceneSplitter:
         start_timestamps: List[str],
         end_timestamps: List[str],
         max_tokens: int,
+        min_duration_sec = 1.0,
     ) -> List[Dict[str, Any]]:
         """
         Recursively apply Otsu method to split scenes
@@ -246,6 +213,38 @@ class SceneSplitter:
         def range_tokens(s: int, e: int) -> int:
             # Return token count for [s, e] (both ends inclusive)
             return token_prefix[e + 1] - token_prefix[s]
+
+        def merge_short_scenes(scenes, min_duration_sec: float):
+            """
+            Merge scenes shorter than min_duration_sec with the next or previous scene.
+            """
+            if not scenes:
+                return scenes
+
+            merged = []
+            buffer_scene = None
+
+            for scene in scenes:
+                duration = SubtitleParser.parse_timestamp(scene["end_time"]) - SubtitleParser.parse_timestamp(scene["start_time"])
+
+                if duration < min_duration_sec:
+                    # If there's already a scene in merged, merge into it
+                    if len(merged) > 0:
+                        merged[-1]["end_time"] = scene["end_time"]
+                        merged[-1]["subtitles"] += scene["subtitles"]
+                    else:
+                        # Otherwise buffer it to merge with the next scene
+                        buffer_scene = scene
+                else:
+                    if buffer_scene:
+                        # Merge buffered short scene into this longer one
+                        scene["start_time"] = buffer_scene["start_time"]
+                        scene["subtitles"] = buffer_scene["subtitles"] + scene["subtitles"]
+                        buffer_scene = None
+
+                    merged.append(scene)
+
+            return merged
 
         def split_scene(start, end):
             token_count = range_tokens(start, end)
@@ -274,9 +273,13 @@ class SceneSplitter:
             return split_scene(start, split_idx - 1) + split_scene(split_idx, end)
 
         embeddings = normalize(embeddings)
-        return split_scene(0, len(embeddings) - 1)
+        return merge_short_scenes(
+            scenes = split_scene(0, len(embeddings) - 1),
+            min_duration_sec = min_duration_sec
+        )
 
-    def process(self, srt_string: str, max_tokens: int = 200) -> str:
+
+    def process(self, srt_string: str, max_tokens: int = 200, min_duration_sec: float = 1.0) -> str:
         """
         Process SRT string and return scene-split SRT string
 
@@ -293,7 +296,7 @@ class SceneSplitter:
         end_times = [end_ts for _, end_ts, _ in subs]
         embeds = self.embedder.get_embeddings(texts, max_tokens)
         scenes = self._apply_otsu_recursive_split(
-            embeds, texts, start_times, end_times, max_tokens
+            embeds, texts, start_times, end_times, max_tokens, min_duration_sec
         )
         return scenes_to_srt_string(scenes)
 

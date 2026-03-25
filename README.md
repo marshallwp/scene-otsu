@@ -11,8 +11,12 @@ A Python library for scene splitting SRT subtitle files using the Otsu method. U
 
 ## Installation
 
-```bash
-pip install scene-otsu
+This variant is not on PyPI.  Instead you'll need to build it using hatch via:
+
+```
+hatch build
+```
+
 ```
 
 ## Usage
