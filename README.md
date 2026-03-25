@@ -47,8 +47,8 @@ Today we will discuss machine learning.
 Let's start with the basics.
 """
 
-# Execute scene splitting (max 200 tokens)
-result = splitter.process(srt_content, max_tokens=200)
+# Execute scene splitting (max 200 tokens, minimum scene duration of 1.0 seconds)
+result = splitter.process(srt_content, max_tokens=200, min_duration_sec=1.0)
 print(result)
 ```
 
